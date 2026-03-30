@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>USB TRACKER | Admin Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style1.0">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div id="loginPage" class="login-page">
+        <div class="stars"></div>
+        <div class="twinkling"></div>
+        <div class="login-container">
+            <div class="login-box">
+                <div class="login-header">
+                    <div class="login-icon">
+                        <i class="fas fa-usb"></i>
+                        <i class="fas fa-location-dot"></i>
+                    </div>
+                    <h1>USB<span>TRACKER</span></h1>
+                    <p>Admin Access Only</p>
+                </div>
+                <div class="login-form">
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="adminUsername" placeholder="Username" class="input-field">
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="adminPassword" placeholder="Password" class="input-field" onkeypress="if(event.key==='Enter') adminLogin()">
+                    </div>
+                    <button onclick="adminLogin()" class="login-btn">
+                        <i class="fas fa-sign-in-alt"></i> LOGIN
+                    </button>
+                    <div id="loginError" class="login-error"></div>
+                </div>
+                <div class="login-footer">
+                    <span>🔒 Secure Admin Panel</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboardContainer" style="display: none;">
+        <div class="stars"></div>
+        <div class="twinkling"></div>
+        
+        <div class="app-container">
+            <aside class="sidebar">
+                <div class="logo-section">
+                    <div class="logo-icon">
+                        <i class="fas fa-usb"></i>
+                        <i class="fas fa-location-dot"></i>
+                    </div>
+                    <h1 class="logo-text">USB<span>TRACKER</span></h1>
+                    <div class="logo-badge">Admin Panel</div>
+                    <div class="user-info" id="userInfo">
+                        <i class="fas fa-user-shield"></i> Admin
+                        <button onclick="adminLogout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card" id="statDevices">
+                        <div class="stat-icon"><i class="fas fa-microchip"></i></div>
+                        <div class="stat-value" id="totalDevices">0</div>
+                        <div class="stat-label">DEVICES</div>
+                    </div>
+                    <div class="stat-card" id="statActive">
+                        <div class="stat-icon"><i class="fas fa-satellite-dish"></i></div>
+                        <div class="stat-value" id="activeDevices">0</div>
+                        <div class="stat-label">ACTIVE</div>
+                    </div>
+                    <div class="stat-card" id="statPhotos">
+                        <div class="stat-icon"><i class="fas fa-camera-retro"></i></div>
+                        <div class="stat-value" id="totalPhotos">0</div>
+                        <div class="stat-label">PHOTOS</div>
+                    </div>
+                    <div class="stat-card" id="statTracks">
+                        <div class="stat-icon"><i class="fas fa-map-marker-alt"></i></div>
+                        <div class="stat-value" id="totalLocations">0</div>
+                        <div class="stat-label">TRACKS</div>
+                    </div>
+                </div>
+                
+                <div class="device-section">
+                    <div class="section-header">
+                        <span class="pulse-dot"></span>
+                        <h3>REGISTERED DEVICES</h3>
+                        <button class="btn-add" onclick="openAddDeviceModal()">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div id="deviceList" class="device-list scrollable"></div>
+                </div>
+                
+                <div class="terminal-section">
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                        </div>
+                        <span>SYSTEM_LOG.sh</span>
+                        <i class="fas fa-terminal"></i>
+                    </div>
+                    <div id="terminalLog" class="terminal-log scrollable"></div>
+                </div>
+            </aside>
+            
+            <main class="main-content">
+                <div class="map-container">
+                    <div id="map"></div>
+                    <div class="map-controls">
+                        <button onclick="zoomIn()" class="map-btn"><i class="fas fa-plus"></i></button>
+                        <button onclick="zoomOut()" class="map-btn"><i class="fas fa-minus"></i></button>
+                        <button onclick="resetMapView()" class="map-btn"><i class="fas fa-globe"></i></button>
+                        <button onclick="clearAllMarkers()" class="map-btn"><i class="fas fa-trash-alt"></i></button>
+                        <button onclick="refreshData()" class="map-btn"><i class="fas fa-sync-alt"></i></button>
+                        <button onclick="openFullscreenMap()" class="map-btn"><i class="fas fa-expand"></i></button>
+                    </div>
+                </div>
+                
+                <div class="tabs-container">
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="locations">
+                            <i class="fas fa-map-pin"></i> LOCATION LOGS
+                        </button>
+                        <button class="tab-btn" data-tab="photos">
+                            <i class="fas fa-images"></i> PHOTO GALLERY
+                        </button>
+                        <button class="tab-btn" data-tab="alerts">
+                            <i class="fas fa-bell"></i> ALERTS
+                        </button>
+                        <button class="tab-btn" data-tab="analytics">
+                            <i class="fas fa-chart-line"></i> ANALYTICS
+                        </button>
+                    </div>
+                    
+                    <div id="locationsTab" class="tab-content active">
+                        <div class="filter-bar">
+                            <div class="search-wrapper">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="searchLocation" placeholder="Filter by device ID or city..." class="filter-input">
+                            </div>
+                            <button onclick="clearHistory()" class="clear-btn">
+                                <i class="fas fa-eraser"></i> CLEAR HISTORY
+                            </button>
+                        </div>
+                        <div id="locationList" class="location-list scrollable"></div>
+                    </div>
+                    
+                    <div id="photosTab" class="tab-content">
+                        <div class="filter-bar">
+                            <div class="search-wrapper">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="searchPhoto" placeholder="Filter by device..." class="filter-input">
+                            </div>
+                            <button onclick="deleteAllPhotos()" class="delete-all-btn">
+                                <i class="fas fa-trash-alt"></i> DELETE ALL
+                            </button>
+                        </div>
+                        <div id="photoGallery" class="photo-gallery scrollable"></div>
+                    </div>
+                    
+                    <div id="alertsTab" class="tab-content">
+                        <div id="alertList" class="alert-list scrollable"></div>
+                    </div>
+                    
+                    <div id="analyticsTab" class="tab-content">
+                        <div class="filter-bar">
+                            <button onclick="exportData('csv')" class="export-btn">
+                                <i class="fas fa-file-csv"></i> Export CSV
+                            </button>
+                            <button onclick="exportData('excel')" class="export-btn">
+                                <i class="fas fa-file-excel"></i> Export Excel
+                            </button>
+                        </div>
+                        <div class="analytics-grid">
+                            <div class="analytics-card">
+                                <h4><i class="fas fa-chart-pie"></i> TOP LOCATIONS</h4>
+                                <div id="topLocations"></div>
+                            </div>
+                            <div class="analytics-card">
+                                <h4><i class="fas fa-calendar-day"></i> DAILY STATS</h4>
+                                <div id="dailyStats"></div>
+                            </div>
+                            <div class="analytics-card">
+                                <h4><i class="fas fa-chart-simple"></i> ACTIVITY OVERVIEW</h4>
+                                <div id="activityOverview"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <div id="addModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-usb"></i> ADD NEW DEVICE</h2>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" id="deviceId" placeholder="Device ID (e.g., USB-001)" class="input-field">
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-tag"></i>
+                        <input type="text" id="deviceName" placeholder="Device Name" class="input-field">
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="ownerName" placeholder="Owner Name" class="input-field">
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button onclick="saveDevice()" class="save-btn">
+                        <i class="fas fa-check"></i> ENROLL DEVICE
+                    </button>
+                    <button onclick="closeModal()" class="cancel-btn">
+                        <i class="fas fa-times"></i> CANCEL
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="fullscreenMapModal" class="fullscreen-modal">
+            <div class="fullscreen-modal-content">
+                <button class="fullscreen-close" onclick="closeFullscreenMap()">&times;</button>
+                <div id="fullscreenMap" class="fullscreen-map"></div>
+            </div>
+        </div>
+        
+        <div id="imageModal" class="image-modal" onclick="closeImageModal()">
+            <div class="image-modal-content" onclick="event.stopPropagation()">
+                <button class="image-close" onclick="closeImageModal()">&times;</button>
+                <div class="image-container" id="imageContainer">
+                    <img id="fullImage" src="">
+                </div>
+                <div class="image-controls">
+                    <button onclick="zoomImage('in')" class="img-btn"><i class="fas fa-search-plus"></i></button>
+                    <button onclick="zoomImage('out')" class="img-btn"><i class="fas fa-search-minus"></i></button>
+                    <button onclick="resetImageZoom()" class="img-btn"><i class="fas fa-undo-alt"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="config1.0"></script>
+    <script src="script1.0"></script>
+</body>
+</html>
